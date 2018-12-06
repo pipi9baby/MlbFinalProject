@@ -14,7 +14,7 @@ y_Test = testY
 model = Sequential()  
 # Create Conv layer 1  
 model.add(Conv2D(filters=1,  
-                 kernel_size=(5,5),  
+                 kernel_size=(3,3),  
                  padding='same',  
                  input_shape=(36,20,1),  
                  activation='relu'))  
