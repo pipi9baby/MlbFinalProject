@@ -20,8 +20,8 @@ def dynamicString(str1, str2):
 				test_list[i][j] = 1 + min([test_list[i-1][j-1], test_list[i-1][j], test_list[i][j-1]])
 	return test_list[len(str1)][len(str2)]
 
-testFile = r"C:\Users\MINHAN\Desktop\signalp\test\NCEuk.nr.fasta"
-trainFile = r"C:\Users\MINHAN\Desktop\signalp\train\train.fasta"
+testFile = r"C:\Users\MINHAN\Desktop\NCEuk.nr.fasta"
+trainFile = r"C:\Users\MINHAN\Desktop\train.fasta"
 
 aminoNum = 35
 
@@ -70,12 +70,13 @@ for seq1 in trainDataSeq:
 		simDict[returnInt].append(seq2)
 	
 	#找最大的20個
-	items = simDict.items()
+	items = list(simDict.keys())
 	items.sort()
 	limit = 0
-	for key,value in items:
+	for key in items:
+		value = simDict[key]
 		for eachSeq in value:
-			index = trainDataSeq.index(value)
+			index = trainDataSeq.index(eachSeq)
 			seqSimLi.append(trainY[index])
 			limit += 1
 			if(limit > 20):
@@ -91,7 +92,7 @@ for seq in trainDataSeq:
 	for amino in seq:
 		#做one hot encoding
 		tmpLi = [0] * 20
-		tmpLi[amino] = 1
+		tmpLi[aminoDict[amino]] = 1
 		trainX = trainX + tmpLi
 	#存最後20個像的
 	trainX = trainX + seqSimLi[:20]
@@ -103,8 +104,10 @@ for seq in trainDataSeq:
 	for amino in seq:
 		#做one hot encoding
 		tmpLi = [0] * 20
-		tmpLi[amino] = 1
+		tmpLi[aminoDict[amino]] = 1
 		testX = testX + tmpLi
 
-print(testX, trainX, trainY)
+print(testX)
+print(trainX)
+print(trainY)
 print("successful!")
