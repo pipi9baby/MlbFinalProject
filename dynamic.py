@@ -98,7 +98,32 @@ for seq in trainDataSeq:
 	trainX = trainX + seqSimLi[:20]
 	seqSimLi = seqSimLi[20:]
 
-#做trainData 的 one hot encoding
+#test data最像的20個
+seqSimLi = []
+for seq1 in testDataSeq:
+	simDict = defaultdict(list)
+	for seq2 in testDataSeq:
+		if seq1 == seq2:
+			continue
+		returnInt = dynamicString(seq1, seq2)
+		simDict[returnInt].append(seq2)
+	
+	#找最大的20個
+	items = list(simDict.keys())
+	items.sort()
+	limit = 0
+	for key in items:
+		value = simDict[key]
+		for eachSeq in value:
+			index = testDataSeq.index(eachSeq)
+			seqSimLi.append(trainY[index])
+			limit += 1
+			if(limit > 20):
+				break
+		if(limit > 20):
+			break
+
+#做testData 的 one hot encoding
 testX = []
 for seq in trainDataSeq:
 	for amino in seq:
@@ -106,6 +131,9 @@ for seq in trainDataSeq:
 		tmpLi = [0] * 20
 		tmpLi[aminoDict[amino]] = 1
 		testX = testX + tmpLi
+	#存最後20個像的
+	testX = testX + seqSimLi[:20]
+	seqSimLi = seqSimLi[20:]
 
 print(testX)
 print(trainX)
