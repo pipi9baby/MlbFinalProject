@@ -7,9 +7,10 @@ import numpy as np
   
 # reshape the data  
 X_Train = trainX.reshape(len(trainX)/(20*36), 36, 20, 1).astype('float32')  
-X_Test = testX.reshape(len(testX)/(20*36), 36, 20, 1).astype('float32')  
+NCEuk_Test = NCEuk.reshape(len(NCEuk)/(20*36), 36, 20, 1).astype('float32') 
+SPEuk_Test = SPEuk.reshape(len(SPEuk)/(20*36), 36, 20, 1).astype('float32') 
+TMEuk_Test = TMEuk.reshape(len(TMEuk)/(20*36), 36, 20, 1).astype('float32') 
 y_Train = trainY
-y_Test = testY
   
 model = Sequential()  
 # Create Conv layer 1  
@@ -50,7 +51,9 @@ train_history = model.fit(x=X_Train,
 #print("\t[Info] Accuracy of testing data = {:2.1f}%".format(scores[1]*100.0)) 
 
 
-predictY = model.predict_classes(X_Test)  # Making prediction and save result to prediction  
+predictY_NCE = model.predict_classes(NCEuk_Test)  # Making prediction and save result to prediction  
+predictY_SPE = model.predict_classes(SPEuk_Test)
+predictY_TME = model.predict_classes(TMEuk_Test)
 print()  
 
    
