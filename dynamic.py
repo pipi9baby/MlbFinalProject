@@ -2,7 +2,9 @@ from collections import defaultdict
 import json
 import time
 
-testFile = r"C:\Users\MINHAN\Desktop\signalp\test\NCEuk.nr.fasta"
+NCEukFile = r"C:\Users\MINHAN\Desktop\signalp\test\NCEuk.nr.fasta"
+SPEukFile = r"C:\Users\MINHAN\Desktop\signalp\test\SPEuk.nr.fasta"
+TMEukFile = r"C:\Users\MINHAN\Desktop\signalp\test\TMEuk.nr.fasta"
 trainFile = r"C:\Users\MINHAN\Desktop\signalp\train\train.fasta"
 outputDir = r"C:\Users\MINHAN\Desktop\structure96"
 
@@ -145,7 +147,7 @@ ReadTrainDataSeq(trainFile, trainDataSeq, trainY)
 with open('trainY.json', 'w') as outfile:
 	json.dump(trainY, outfile)
 
-testDataSeq = ReadTestDataSeq(testFile)
+testDataSeq = ReadTestDataSeq(NCEukFile)
 
 print("do trainX")
 trainX = []
@@ -207,8 +209,7 @@ with open(outputDir + r'\NCEuk_pair.json', 'w') as outfile:
 	json.dump(testXP, outfile)
 
 print("do SPEuk")
-testFile = r"C:\Users\MINHAN\Desktop\signalp\test\SPEuk.nr.fasta"
-testDataSeq = ReadTestDataSeq(testFile)
+testDataSeq = ReadTestDataSeq(SPEukFile)
 #test data最像的20個
 testX = []
 seqSimLi = []
@@ -235,8 +236,7 @@ with open(outputDir + '\SPEuk_pair.json', 'w') as outfile:
 	json.dump(testXP, outfile)
 
 print("do TMEuk")
-testFile = r"C:\Users\MINHAN\Desktop\signalp\test\TMEuk.nr.fasta"
-testDataSeq = ReadTestDataSeq(testFile)
+testDataSeq = ReadTestDataSeq(TMEukFile)
 #test data最像的20個
 testX = []
 seqSimLi = []
