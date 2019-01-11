@@ -2,12 +2,17 @@ from collections import defaultdict
 import json
 import time
 
-testFile = r"/Users/pipi9baby/Desktop/signalp/test/NCEuk.nr.fasta"
-trainFile = r"/Users/pipi9baby/Desktop/signalp/train/train.fasta"
+testFile = r"C:\Users\MINHAN\Desktop\signalp\test\NCEuk.nr.fasta"
+trainFile = r"C:\Users\MINHAN\Desktop\signalp\train\train.fasta"
+outputDir = r"C:\Users\MINHAN\Desktop\structure96"
 
-aminoNum = 35
-aminoDict ={'G':0,'A':1,'V':2,'L':3,'I':4,'F':5,'W':6,'Y':7,'D':8,'H':9,'N':10,'E':11,'K':12,'Q':13,'M':14,'R':15,'S':16,'T':17,'C':18,'P':19}
+aminoNum = 96
 
+aminoDict ={'A':0,'V':1,'L':2,'I':3,'F':4,'W':5,'M':6,'P':7,'G':8,'Y':9,'N':10,'Q':11,'S':12,'T':13,'C':14,'D':15,'E':16,'H':17,'K':18,'R':19}
+#分子量
+#aminoDict ={'G':0,'A':1,'V':2,'L':3,'I':4,'F':5,'W':6,'Y':7,'D':8,'H':9,'N':10,'E':11,'K':12,'Q':13,'M':14,'R':15,'S':16,'T':17,'C':18,'P':19}
+#A-z
+#aminoDict ={'A':0,'C':1,'D':2,'E':3,'F':4,'G':5,'H':6,'I':7,'K':8,'L':9,'M':10,'N':11,'P':12,'Q':13,'R':14,'S':15,'T':16,'V':17,'W':18,'Y':19}
 #動態規劃法，輸入兩個string回傳一個int
 """
 def dynamicString(str1, str2):
@@ -71,7 +76,19 @@ def ReadTestDataSeq(filePath):
 		testDataSeq.append(tmpLi[1][:aminoNum])
 	return testDataSeq
 
-#找seq最像的20個
+#找seq最像的1個
+def FindCloset1Seq(seq1, DataSeq):
+	simDict = defaultdict(list)
+	for seq2 in DataSeq:
+		returnInt = dynamicString(seq1, seq2)
+		simDict[returnInt].append(seq2)
+
+	#找最大的20個
+	items = list(simDict.keys())
+
+	minIndex = min(items)	
+	return simDict[minIndex][0]
+"""
 def FindCloset20Seq(seq1, DataSeq):
 	simDict = defaultdict(list)
 	seqSimLi = []
@@ -99,6 +116,22 @@ def FindCloset20Seq(seq1, DataSeq):
 		print("Error")
 		seqSimLi = seqSimLi[:20]
 	return seqSimLi
+"""
+
+def OneHotEncoding(seq):
+	result = []
+	for amino in seq:
+		#做one hot encoding
+		tmpLi = [0] * 20
+		try:
+			tmpLi[aminoDict[amino]] = 1
+		except:
+			print(seq1, amino)
+		result = result + tmpLi
+	if len(seq) < aminoNum:
+		tmpLi = [0] * ((aminoNum - len(seq))*20)
+		result = result + tmpLi
+	return result
 
 localtime = time.asctime( time.localtime(time.time()) )
 print("start time", localtime)
@@ -107,19 +140,19 @@ trainDataSeq = []
 trainY = []
 
 ReadTrainDataSeq(trainFile, trainDataSeq, trainY)
-"""
+
 #輸出trainY
 with open('trainY.json', 'w') as outfile:
 	json.dump(trainY, outfile)
-"""
+
 testDataSeq = ReadTestDataSeq(testFile)
 
 print("do trainX")
 trainX = []
+seqSimLi = []
 for seq1 in trainDataSeq:
-	#取train data最像的20個
-	seqSimLi = []
-	seqSimLi = FindCloset20Seq(seq1, trainDataSeq)
+	#取train data最像的1個
+	seqSimLi.append(FindCloset1Seq(seq1, trainDataSeq))
 	for amino in seq1:
 		#做one hot encoding
 		tmpLi = [0] * 20
@@ -128,23 +161,30 @@ for seq1 in trainDataSeq:
 		except:
 			print(seq1, amino)
 		trainX = trainX + tmpLi
-	tmp = len(seq1)
 	if len(seq1) < aminoNum:
 		tmpLi = [0] * ((aminoNum - len(seq1))*20)
 		trainX = trainX + tmpLi
-	#存最後20個像的
-	trainX = trainX + seqSimLi
+
 
 #輸出trainX
-with open('trainX.json', 'w') as outfile:
+with open(outputDir + r'\trainX.json', 'w') as outfile:
 	json.dump(trainX, outfile)
+
+#做最像的seq的encoding
+trainXP = []
+for seq in seqSimLi:
+	trainXP = trainXP + OneHotEncoding(seq)
+
+#輸出trainX的pair seq
+with open(outputDir + r'\trainX_pair.json', 'w') as outfile:
+	json.dump(trainXP, outfile)
 
 print("do NCEuk")
 #test data最像的20個
 testX = []
+seqSimLi = []
 for seq1 in testDataSeq:
-	seqSimLi = []
-	seqSimLi = FindCloset20Seq(seq1, testDataSeq)
+	seqSimLi.append(FindCloset1Seq(seq1, testDataSeq))
 	for amino in seq1:
 		#做one hot encoding
 		tmpLi = [0] * 20
@@ -153,21 +193,27 @@ for seq1 in testDataSeq:
 	if len(seq1) < aminoNum:
 		tmpLi = [0] * ((aminoNum - len(seq1))*20)
 		testX = testX + tmpLi
-	#存最後20個像的
-	testX = testX + seqSimLi
 
 #輸出NCEuk testData
-with open('NCEuk.json', 'w') as outfile:
+with open(outputDir + r'\NCEuk.json', 'w') as outfile:
 	json.dump(testX, outfile)
+
+#做最像的seq的encoding
+testXP = []
+for seq in seqSimLi:
+	testXP = testXP + OneHotEncoding(seq)
+#輸出testX的pair seq
+with open(outputDir + r'\NCEuk_pair.json', 'w') as outfile:
+	json.dump(testXP, outfile)
 
 print("do SPEuk")
-testFile = r"/Users/pipi9baby/Desktop/signalp/test/SPEuk.nr.fasta"
+testFile = r"C:\Users\MINHAN\Desktop\signalp\test\SPEuk.nr.fasta"
 testDataSeq = ReadTestDataSeq(testFile)
 #test data最像的20個
 testX = []
+seqSimLi = []
 for seq1 in testDataSeq:
-	seqSimLi = []
-	seqSimLi = FindCloset20Seq(seq1, testDataSeq)
+	seqSimLi.append(FindCloset1Seq(seq1, testDataSeq))
 	for amino in seq1:
 		#做one hot encoding
 		tmpLi = [0] * 20
@@ -176,20 +222,26 @@ for seq1 in testDataSeq:
 	if len(seq1) < aminoNum:
 		tmpLi = [0] * ((aminoNum - len(seq1))*20)
 		testX = testX + tmpLi
-	#存最後20個像的
-	testX = testX + seqSimLi
 
-with open('SPEuk.json', 'w') as outfile:
+with open(outputDir + r'\SPEuk.json', 'w') as outfile:
 	json.dump(testX, outfile)
+
+#做最像的seq的encoding
+testXP = []
+for seq in seqSimLi:
+	testXP = testXP + OneHotEncoding(seq)
+#輸出testX的pair seq
+with open(outputDir + '\SPEuk_pair.json', 'w') as outfile:
+	json.dump(testXP, outfile)
 
 print("do TMEuk")
-testFile = r"/Users/pipi9baby/Desktop/signalp/test/TMEuk.nr.fasta"
+testFile = r"C:\Users\MINHAN\Desktop\signalp\test\TMEuk.nr.fasta"
 testDataSeq = ReadTestDataSeq(testFile)
 #test data最像的20個
 testX = []
+seqSimLi = []
 for seq1 in testDataSeq:
-	seqSimLi = []
-	seqSimLi = FindCloset20Seq(seq1, testDataSeq)
+	seqSimLi.append(FindCloset1Seq(seq1, testDataSeq))
 	for amino in seq1:
 		#做one hot encoding
 		tmpLi = [0] * 20
@@ -198,11 +250,17 @@ for seq1 in testDataSeq:
 	if len(seq1) < aminoNum:
 		tmpLi = [0] * ((aminoNum - len(seq1))*20)
 		testX = testX + tmpLi
-	#存最後20個像的
-	testX = testX + seqSimLi
 
-with open('TMEuk.json', 'w') as outfile:
+with open(outputDir + r'\TMEuk.json', 'w') as outfile:
 	json.dump(testX, outfile)
+
+#做最像的seq的encoding
+testXP = []
+for seq in seqSimLi:
+	testXP = testXP + OneHotEncoding(seq)
+#輸出testX的pair seq
+with open(outputDir + r'\TMEuk_pair.json', 'w') as outfile:
+	json.dump(testXP, outfile)
 
 localtime = time.asctime( time.localtime(time.time()) )
 print("END time", localtime)
